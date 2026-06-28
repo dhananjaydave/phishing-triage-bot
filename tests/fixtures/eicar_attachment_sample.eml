@@ -1,0 +1,21 @@
+Subject: Test attachment
+From: tester@example.com
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============7491675477690324698=="
+
+--===============7491675477690324698==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+See attached.
+
+--===============7491675477690324698==
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="eicar_test.com"
+MIME-Version: 1.0
+
+WDVPIVAlQEFQWzRcUFpYNTQoUF4pN0NDKTd9JEVJQ0FSLVNUQU5EQVJELUFOVElWSVJVUy1URVNU
+LUZJTEUhJEgrSCo=
+
+--===============7491675477690324698==--

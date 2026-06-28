@@ -1,7 +1,8 @@
+from email.message import EmailMessage
 from pathlib import Path
 from unittest.mock import patch
 
-from triage.pipeline import triage_email
+from triage.pipeline import MAX_INDICATORS_PER_EMAIL, triage_email
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
@@ -44,3 +45,22 @@ async def test_pipeline_gathers_expected_indicator_types():
     assert "paypa1-secure.tk" in queried  # sender domain
     assert "192.168.45.10" in queried  # URL "domain" (it's a bare IP here)
     assert any(len(q) == 64 for q in queried)  # attachment sha256
+
+
+async def test_many_urls_are_capped_not_all_enriched():
+    msg = EmailMessage()
+    msg["Subject"] = "many links"
+    msg["From"] = "a@example.com"
+    body = "\n".join(f"http://site{i}.example.com/path" for i in range(50))
+    msg.set_content(body)
+
+    queried = []
+
+    async def capturing_enrich(indicator: str) -> dict:
+        queried.append(indicator)
+        return {"indicator": indicator, "status": "ok", "verdict": "clean"}
+
+    with patch("triage.pipeline.enrich_indicator", side_effect=capturing_enrich):
+        await triage_email(msg.as_bytes())
+
+    assert len(queried) <= MAX_INDICATORS_PER_EMAIL

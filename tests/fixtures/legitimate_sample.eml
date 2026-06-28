@@ -8,9 +8,9 @@ Received: from out-1.smtp.github.com (out-1.smtp.github.com [140.82.112.1]) by
  mx.example.com
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
- boundary="===============2485460760990950237=="
+ boundary="===============4384634943571393522=="
 
---===============2485460760990950237==
+--===============4384634943571393522==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -22,7 +22,7 @@ tions
 Thanks,
 The GitHub Team
 
---===============2485460760990950237==
+--===============4384634943571393522==
 Content-Type: text/html; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 MIME-Version: 1.0
@@ -35,4 +35,4 @@ MIME-Version: 1.0
         </body></html>
         
 
---===============2485460760990950237==--
+--===============4384634943571393522==--

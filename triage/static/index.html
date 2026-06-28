@@ -71,6 +71,46 @@
   .links a:hover { border-color: var(--accent); background: var(--bg-panel); }
   .links a.primary { background: var(--accent); color: #1a0505; border-color: var(--accent); }
   footer { color: var(--text-dim); font-size: 0.85rem; margin-top: 4rem; font-family: var(--mono); }
+
+  .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  .tab-btn {
+    font-family: var(--mono); font-size: 0.8rem; padding: 0.5rem 1rem; border-radius: 6px;
+    border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer;
+  }
+  .tab-btn.active { border-color: var(--accent); color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  textarea#raw-text {
+    width: 100%; min-height: 140px; background: #0a0e14; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 0.7rem 0.9rem; font-family: var(--mono); font-size: 0.82rem; resize: vertical;
+  }
+  textarea#raw-text:focus { outline: none; border-color: var(--accent); }
+  input#file-input {
+    width: 100%; background: #0a0e14; border: 1px dashed var(--border); border-radius: 6px;
+    color: var(--text-dim); padding: 1.4rem 0.9rem; font-size: 0.85rem;
+  }
+  .demo-submit {
+    background: var(--accent); color: #1a0505; border: none; border-radius: 6px;
+    padding: 0.7rem 1.4rem; font-weight: 600; cursor: pointer; font-size: 0.92rem; margin-top: 1rem;
+  }
+  .demo-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .demo-note { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.6rem; }
+  #demo-result { display: none; margin-top: 1.25rem; }
+  .verdict-banner {
+    display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; border-radius: 8px;
+    font-family: var(--mono); font-weight: 700; font-size: 0.9rem; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .verdict-phishing { background: rgba(248,113,113,0.12); color: var(--malicious); border: 1px solid rgba(248,113,113,0.3); }
+  .verdict-suspicious { background: rgba(251,191,36,0.12); color: var(--suspicious); border: 1px solid rgba(251,191,36,0.3); }
+  .verdict-likely.legitimate, .verdict-likely { background: rgba(52,211,153,0.12); color: var(--clean); border: 1px solid rgba(52,211,153,0.3); }
+  #demo-evidence { list-style: none; padding: 0; margin: 0; }
+  #demo-evidence li {
+    display: flex; gap: 0.6rem; padding: 0.55rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;
+  }
+  #demo-evidence li:last-child { border-bottom: none; }
+  #demo-evidence .cat { color: var(--text-dim); font-family: var(--mono); font-size: 0.78rem; flex-shrink: 0; }
+  #demo-error { color: var(--malicious); font-family: var(--mono); font-size: 0.85rem; margin-top: 1rem; display: none; }
 </style>
 </head>
 <body>
@@ -89,6 +129,32 @@
     <strong style="color:var(--text)">plus the full evidence behind it</strong> —
     not just a label you have to trust blindly.
   </p>
+
+  <section>
+    <h2>Live demo</h2>
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="paste">Paste raw source</button>
+        <button class="tab-btn" data-tab="upload">Upload .eml</button>
+      </div>
+      <form id="demo-form">
+        <div class="tab-panel active" data-tab="paste">
+          <textarea id="raw-text" placeholder="Paste full raw email source here (headers + body) - e.g. Gmail's 'Show original'..."></textarea>
+        </div>
+        <div class="tab-panel" data-tab="upload">
+          <input type="file" id="file-input" accept=".eml,message/rfc822">
+        </div>
+        <button type="submit" class="demo-submit" id="demo-submit-btn">Analyze</button>
+        <div class="demo-note">Limited to 5 analyses/hour per visitor. Nothing submitted here is stored - it's parsed in memory and discarded after the report is returned. Don't paste real victim/PII data if you don't have to.</div>
+      </form>
+      <div id="demo-result">
+        <div class="verdict-banner" id="demo-verdict"></div>
+        <p style="font-size:0.85rem; color:var(--text-dim); margin:0 0 0.75rem;" id="demo-meta"></p>
+        <ul id="demo-evidence"></ul>
+      </div>
+      <div id="demo-error"></div>
+    </div>
+  </section>
 
   <section>
     <h2>Example report</h2>
@@ -152,5 +218,103 @@ Evidence:
 
   <footer>Private Telegram webhook bot - no public form, by design.</footer>
 </div>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelector(`.tab-panel[data-tab="${btn.dataset.tab}"]`).classList.add('active');
+    });
+  });
+
+  const SEVERITY_EMOJI = { malicious: '\u{1F534}', suspicious: '\u{1F7E1}', info: '\u{1F7E2}' };
+  const VERDICT_CLASS = { phishing: 'verdict-phishing', suspicious: 'verdict-suspicious', 'likely legitimate': 'verdict-likely' };
+  const VERDICT_LABEL = { phishing: '\u{1F6A8} LIKELY PHISHING', suspicious: '⚠️ SUSPICIOUS', 'likely legitimate': '✅ LIKELY LEGITIMATE' };
+
+  const form = document.getElementById('demo-form');
+  const submitBtn = document.getElementById('demo-submit-btn');
+  const resultBox = document.getElementById('demo-result');
+  const verdictBanner = document.getElementById('demo-verdict');
+  const metaLine = document.getElementById('demo-meta');
+  const evidenceList = document.getElementById('demo-evidence');
+  const errorBox = document.getElementById('demo-error');
+
+  function clearChildren(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+    const fd = new FormData();
+    if (activeTab === 'upload') {
+      const file = document.getElementById('file-input').files[0];
+      if (!file) { return; }
+      fd.append('file', file);
+    } else {
+      const text = document.getElementById('raw-text').value.trim();
+      if (!text) { return; }
+      fd.append('raw_text', text);
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Analyzing...';
+    resultBox.style.display = 'none';
+    errorBox.style.display = 'none';
+
+    try {
+      const resp = await fetch('/demo/analyze', { method: 'POST', body: fd });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        errorBox.textContent = data.error || `Error ${resp.status}`;
+        errorBox.style.display = 'block';
+      } else {
+        // Every dynamic value below is set via textContent, never innerHTML -
+        // the email content driving this is fully attacker-controlled.
+        verdictBanner.className = 'verdict-banner ' + (VERDICT_CLASS[data.verdict] || '');
+        verdictBanner.textContent = VERDICT_LABEL[data.verdict] || data.verdict;
+
+        const fromLabel = [data.from_display_name, data.from_address ? `<${data.from_address}>` : '']
+          .filter(Boolean).join(' ');
+        metaLine.textContent = `Subject: ${data.subject || '(none)'}  |  From: ${fromLabel || 'unknown'}`;
+
+        clearChildren(evidenceList);
+        for (const ev of (data.evidence || [])) {
+          const li = document.createElement('li');
+          const cat = document.createElement('span');
+          cat.className = 'cat';
+          cat.textContent = `${SEVERITY_EMOJI[ev.severity] || ''} [${ev.category}]`;
+          const desc = document.createElement('span');
+          desc.textContent = ev.description;
+          li.appendChild(cat);
+          li.appendChild(desc);
+          evidenceList.appendChild(li);
+        }
+        for (const r of (data.enrichment_results || [])) {
+          const li = document.createElement('li');
+          const cat = document.createElement('span');
+          cat.className = 'cat';
+          cat.textContent = '⚪ [ioc]';
+          const desc = document.createElement('span');
+          desc.textContent = `${r.indicator}: ${r.verdict || r.status}`;
+          li.appendChild(cat);
+          li.appendChild(desc);
+          evidenceList.appendChild(li);
+        }
+
+        resultBox.style.display = 'block';
+      }
+    } catch (err) {
+      errorBox.textContent = 'Request failed: ' + err;
+      errorBox.style.display = 'block';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Analyze';
+    }
+  });
+</script>
 </body>
 </html>

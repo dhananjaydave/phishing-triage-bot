@@ -68,7 +68,23 @@ def build_legitimate_sample() -> bytes:
     return msg.as_bytes()
 
 
+def build_eicar_attachment_sample() -> bytes:
+    """Uses the standard EICAR test string (https://en.wikipedia.org/wiki/EICAR_test_file)
+    - a harmless string every AV vendor is designed to flag as malicious, used
+    precisely so malware-handling code paths can be tested without using any
+    real malware."""
+    eicar = rb"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*"
+
+    msg = EmailMessage()
+    msg["Subject"] = "Test attachment"
+    msg["From"] = "tester@example.com"
+    msg.set_content("See attached.")
+    msg.add_attachment(eicar, maintype="application", subtype="octet-stream", filename="eicar_test.com")
+    return msg.as_bytes()
+
+
 if __name__ == "__main__":
     (FIXTURES_DIR / "phishing_sample.eml").write_bytes(build_phishing_sample())
     (FIXTURES_DIR / "legitimate_sample.eml").write_bytes(build_legitimate_sample())
-    print("Wrote phishing_sample.eml and legitimate_sample.eml")
+    (FIXTURES_DIR / "eicar_attachment_sample.eml").write_bytes(build_eicar_attachment_sample())
+    print("Wrote phishing_sample.eml, legitimate_sample.eml, and eicar_attachment_sample.eml")

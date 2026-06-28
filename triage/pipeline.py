@@ -11,6 +11,9 @@ from .heuristics import Evidence, run_all_heuristics
 from .verdict import compute_overall_verdict
 
 
+MAX_INDICATORS_PER_EMAIL = 15
+
+
 @dataclass
 class TriageReport:
     parsed: ParsedEmail
@@ -33,8 +36,15 @@ async def triage_email(raw: bytes) -> TriageReport:
     for attachment in parsed.attachments:
         indicators.add(attachment.sha256)
 
+    # A crafted email with hundreds of links could otherwise turn one triage
+    # request into hundreds of outbound enrichment calls - cap it so this
+    # can't be used to hammer the (separate) IOC Enrichment API.
+    capped_indicators = list(indicators)[:MAX_INDICATORS_PER_EMAIL]
+
     enrichment_results = (
-        list(await asyncio.gather(*(enrich_indicator(ind) for ind in indicators))) if indicators else []
+        list(await asyncio.gather(*(enrich_indicator(ind) for ind in capped_indicators)))
+        if capped_indicators
+        else []
     )
 
     verdict = compute_overall_verdict(evidence, enrichment_results)
