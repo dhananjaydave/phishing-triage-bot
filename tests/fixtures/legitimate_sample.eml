@@ -1,0 +1,38 @@
+Subject: Your weekly digest
+From: "GitHub" <notifications@github.com>
+To: user@example.com
+Reply-To: notifications@github.com
+Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=github.com;
+ dkim=pass header.i=@github.com; dmarc=pass
+Received: from out-1.smtp.github.com (out-1.smtp.github.com [140.82.112.1]) by
+ mx.example.com
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="===============2485460760990950237=="
+
+--===============2485460760990950237==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi there,
+
+Here's your weekly digest of activity. View it at https://github.com/notifica=
+tions
+
+Thanks,
+The GitHub Team
+
+--===============2485460760990950237==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+        <html><body>
+        <p>Hi there,</p>
+        <p>Here's your weekly digest of activity.</p>
+        <p><a href="https://github.com/notifications">View on GitHub</a></p>
+        <p>Thanks,<br>The GitHub Team</p>
+        </body></html>
+        
+
+--===============2485460760990950237==--

@@ -1,0 +1,53 @@
+Subject: Urgent: Your account will be suspended - verify now
+From: "PayPal Security" <support@paypa1-secure.tk>
+To: victim@example.com
+Reply-To: scammer@randommail.example
+Authentication-Results: mx.example.com; spf=fail
+ smtp.mailfrom=paypa1-secure.tk; dkim=none; dmarc=fail
+Received: from unknown (unknown [45.33.32.156]) by mx.example.com
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============2732241129953832721=="
+
+--===============2732241129953832721==
+Content-Type: multipart/alternative;
+ boundary="===============9164915995294007886=="
+
+--===============9164915995294007886==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Dear Customer,
+
+We have detected unusual activity on your account. Your account will be suspe=
+nded unless you verify your identity immediately. Click here to confirm: http=
+://192.168.45.10/paypal-verify
+
+Act now to avoid suspension.
+
+--===============9164915995294007886==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+        <html><body>
+        <p>Dear Customer,</p>
+        <p>We have detected unusual activity on your account. Your account wi=
+ll be
+        suspended unless you verify your identity immediately.</p>
+        <p><a href=3D"http://192.168.45.10/paypal-verify">https://paypal.com/=
+verify</a></p>
+        <p>Act now to avoid suspension.</p>
+        </body></html>
+       =20
+
+--===============9164915995294007886==--
+
+--===============2732241129953832721==
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="invoice.exe"
+MIME-Version: 1.0
+
+TVqQAGZha2UtYmluYXJ5LWNvbnRlbnQ=
+
+--===============2732241129953832721==--

@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: phishing-triage-bot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --workers 1 --threads 4 --timeout 60 wsgi:app
+    envVars:
+      - key: BASE_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_WEBHOOK_SECRET
+        sync: false
+      - key: ALLOWED_TELEGRAM_CHAT_IDS
+        sync: false
+      - key: IOC_ENRICHMENT_API_URL
+        sync: false
+      - key: IOC_ENRICHMENT_API_KEY
+        sync: false
