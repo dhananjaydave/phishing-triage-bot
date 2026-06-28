@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 
 from flask import Flask
 
@@ -17,9 +18,23 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.register_blueprint(telegram_bot.bp)
 
+
+@app.after_request
+def add_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000").rstrip("/")
+_STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 _initialized = False
+
+
+@app.route("/")
+def index():
+    return (_STATIC_DIR / "index.html").read_text(encoding="utf-8")
 
 
 @app.route("/health")

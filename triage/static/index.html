@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phishing Triage Bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14; --bg-panel: #10151f; --border: #1f2937;
+    --text: #e2e8f0; --text-dim: #8b97a8;
+    --accent: #f87171; --malicious: #f87171; --suspicious: #fbbf24; --clean: #34d399;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: radial-gradient(ellipse at top, #190d10 0%, var(--bg) 60%);
+    color: var(--text); font-family: 'Inter', system-ui, sans-serif; line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+  .badge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .badge {
+    font-family: var(--mono); font-size: 0.72rem; padding: 0.25rem 0.6rem;
+    border: 1px solid var(--border); border-radius: 4px; color: var(--text-dim); background: var(--bg-panel);
+  }
+  h1 {
+    font-size: 2.4rem; margin: 0 0 0.5rem; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .lede { color: var(--text-dim); font-size: 1.1rem; max-width: 640px; margin-bottom: 2.5rem; }
+  .lede code { color: var(--accent); }
+  section { margin-bottom: 3rem; }
+  h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 1rem; font-weight: 600; }
+  .panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; }
+
+  .telegram-bubble {
+    background: #182533; border-radius: 12px; padding: 1.1rem 1.2rem; font-family: var(--mono);
+    font-size: 0.84rem; line-height: 1.7; white-space: pre-wrap; color: #d6e3f0; max-width: 100%; overflow-x: auto;
+  }
+  .v-malicious { color: var(--malicious); font-weight: 700; }
+  .v-suspicious { color: var(--suspicious); }
+  .v-info { color: var(--clean); }
+
+  .arch-list { list-style: none; padding: 0; margin: 0; }
+  .arch-list li { padding: 0.9rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 1rem; }
+  .arch-list li:last-child { border-bottom: none; }
+  .arch-list .num { font-family: var(--mono); color: var(--accent); font-weight: 700; flex-shrink: 0; width: 1.5rem; }
+  .arch-list strong { color: var(--text); }
+  .arch-list span { color: var(--text-dim); }
+
+  .checks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; }
+  .check-item {
+    background: #0a0e14; border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1rem;
+    font-size: 0.85rem; color: var(--text-dim);
+  }
+  .check-item strong { color: var(--text); display: block; margin-bottom: 0.2rem; font-size: 0.85rem; }
+
+  .private-note {
+    display: flex; gap: 0.7rem; align-items: flex-start; background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.25); border-radius: 8px; padding: 1rem 1.1rem; font-size: 0.88rem; color: #fde68a;
+  }
+
+  .links { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .links a {
+    color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.92rem;
+    display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.1rem;
+    border: 1px solid var(--border); border-radius: 8px; transition: border-color 0.15s, background 0.15s;
+  }
+  .links a:hover { border-color: var(--accent); background: var(--bg-panel); }
+  .links a.primary { background: var(--accent); color: #1a0505; border-color: var(--accent); }
+  footer { color: var(--text-dim); font-size: 0.85rem; margin-top: 4rem; font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="badge-row">
+    <span class="badge">PYTHON 3.10</span>
+    <span class="badge">FLASK</span>
+    <span class="badge">TELEGRAM BOT API</span>
+    <span class="badge">IOC ENRICHMENT API</span>
+  </div>
+
+  <h1>Phishing Triage Bot</h1>
+  <p class="lede">
+    Send a <code>.eml</code> to a private Telegram bot, get back a verdict
+    <strong style="color:var(--text)">plus the full evidence behind it</strong> —
+    not just a label you have to trust blindly.
+  </p>
+
+  <section>
+    <h2>Example report</h2>
+    <div class="panel">
+      <div class="telegram-bubble">🚨 <span class="v-malicious">LIKELY PHISHING</span>
+
+Subject: Urgent: Your account will be suspended - verify now
+From: PayPal Security &lt;support@paypa1-secure.tk&gt;
+
+Evidence:
+🔴 <span class="v-malicious">[authentication]</span> SPF/DMARC failed - the sending server isn't authorized to send as this domain.
+🔴 <span class="v-malicious">[sender_spoofing]</span> Display name claims to be 'PayPal Security', but the actual sending domain is 'paypa1-secure.tk', not paypal.com.
+🟡 <span class="v-suspicious">[reply_to]</span> Reply-To domain differs from the From domain - replies get redirected elsewhere.
+🟡 <span class="v-suspicious">[social_engineering]</span> Urgency/pressure language found: urgent, act now, immediately.
+🔴 <span class="v-malicious">[suspicious_url]</span> Link uses a raw IP address instead of a domain.
+🔴 <span class="v-malicious">[link_mismatch]</span> Link text 'https://paypal.com/verify' doesn't match where it actually points.
+🔴 <span class="v-malicious">[attachment]</span> Attachment 'invoice.exe' has a dangerous extension.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What it checks</h2>
+    <div class="panel">
+      <div class="checks-grid">
+        <div class="check-item"><strong>Authentication</strong>SPF / DKIM / DMARC results</div>
+        <div class="check-item"><strong>Brand impersonation</strong>display name vs. actual sending domain</div>
+        <div class="check-item"><strong>Reply-To mismatch</strong>replies redirected elsewhere</div>
+        <div class="check-item"><strong>Social engineering</strong>urgency / pressure language</div>
+        <div class="check-item"><strong>Suspicious URLs</strong>raw IPs, shorteners, abused TLDs, lookalike domains</div>
+        <div class="check-item"><strong>Link mismatch</strong>visible text vs. actual href</div>
+        <div class="check-item"><strong>Attachments</strong>dangerous extensions</div>
+        <div class="check-item"><strong>IOC enrichment</strong>every domain/IP/hash checked against <a href="https://github.com/dhananjaydave/ioc-enrichment-api" style="color:var(--accent)">a separate enrichment API</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Architecture</h2>
+    <div class="panel">
+      <ul class="arch-list">
+        <li><span class="num">01</span><div><strong>Parse.</strong> <span>Stdlib <code>email</code> package only - headers, body text/HTML, every link's (visible text, href) pair, every attachment's SHA256.</span></div></li>
+        <li><span class="num">02</span><div><strong>Score.</strong> <span>Seven independent heuristic checks, each returning evidence at malicious/suspicious/info severity - including the "looks fine" results, not just red flags.</span></div></li>
+        <li><span class="num">03</span><div><strong>Enrich.</strong> <span>Every extracted indicator gets checked against the IOC Enrichment API; degrades gracefully if that's unreachable.</span></div></li>
+        <li><span class="num">04</span><div><strong>Verdict.</strong> <span>Any malicious signal anywhere -> phishing. Any suspicious signal short of that -> suspicious. Deliberately simple and auditable, not a tuned score nobody can explain.</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="private-note">
+      🔒 <div>This bot is <strong>private by design</strong> — locked to a specific allowlisted Telegram chat id. Messaging it from elsewhere gets "This bot is private." instead of a response. That's intentional, not a bug.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="links">
+      <a href="https://github.com/dhananjaydave/phishing-triage-bot" class="primary">View source on GitHub →</a>
+      <a href="https://github.com/dhananjaydave/ioc-enrichment-api">IOC Enrichment API →</a>
+    </div>
+  </section>
+
+  <footer>Private Telegram webhook bot - no public form, by design.</footer>
+</div>
+</body>
+</html>
