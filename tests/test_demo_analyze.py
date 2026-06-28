@@ -4,6 +4,7 @@ Telegram bot itself is private/allowlisted."""
 
 from io import BytesIO
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -23,6 +24,14 @@ def _clear_demo_rate_limit():
     web._demo_request_log.clear()
     yield
     web._demo_request_log.clear()
+
+
+@pytest.fixture(autouse=True)
+def _no_real_whois_lookups():
+    """Domain age is covered by its own test_domain_age.py with mocked WHOIS -
+    these tests shouldn't also make real, slow network WHOIS calls."""
+    with patch("triage.pipeline.check_domain_age", return_value=None):
+        yield
 
 
 def test_rejects_empty_submission(client):

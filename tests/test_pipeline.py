@@ -2,9 +2,19 @@ from email.message import EmailMessage
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from triage.pipeline import MAX_INDICATORS_PER_EMAIL, triage_email
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
+
+
+@pytest.fixture(autouse=True)
+def _no_real_whois_lookups():
+    """Domain age is covered by its own test_domain_age.py with mocked WHOIS -
+    these tests shouldn't also make real, slow network WHOIS calls."""
+    with patch("triage.pipeline.check_domain_age", return_value=None):
+        yield
 
 
 async def _fake_enrich(indicator: str) -> dict:

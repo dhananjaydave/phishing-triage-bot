@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 
+from .domain_age import check_domain_age
 from .email_parser import ParsedEmail, parse_eml
 from .enrichment_client import enrich_indicator, url_domain
 from .heuristics import Evidence, run_all_heuristics
@@ -25,6 +26,12 @@ class TriageReport:
 async def triage_email(raw: bytes) -> TriageReport:
     parsed = parse_eml(raw)
     evidence = run_all_heuristics(parsed)
+
+    if parsed.from_address and "@" in parsed.from_address:
+        sender_domain = parsed.from_address.split("@")[-1].lower()
+        age_evidence = await check_domain_age(sender_domain)
+        if age_evidence:
+            evidence.append(age_evidence)
 
     indicators: set[str] = set()
     if parsed.from_address and "@" in parsed.from_address:
